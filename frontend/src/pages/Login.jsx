@@ -5,9 +5,11 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { Mail, Lock } from 'lucide-react';
 import GithubBrandIcon from '../components/ui/GithubBrandIcon';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
@@ -25,7 +27,7 @@ const Login = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -36,17 +38,19 @@ const Login = () => {
     setErrors({});
     setIsLoading(true);
     
-    // Mock API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await login(formData.email, formData.password);
       navigate('/dashboard');
-    }, 1500);
+    } catch (err) {
+      setErrors({ email: err.response?.data?.message || 'Login failed' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -117,10 +121,7 @@ const Login = () => {
           variant="secondary" 
           className="w-full h-11 bg-surface/50 border-border/50"
           icon={<GithubBrandIcon size={18} />}
-          onClick={() => {
-            setIsLoading(true);
-            setTimeout(() => navigate('/dashboard'), 1500);
-          }}
+          onClick={() => {}}
           disabled={isLoading}
         >
           Continue with GitHub

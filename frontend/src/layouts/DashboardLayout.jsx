@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Code2, 
@@ -10,12 +10,21 @@ import {
   User,
   Activity,
   Menu,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 import GithubBrandIcon from '../components/ui/GithubBrandIcon';
+import { useAuth } from '../contexts/AuthContext';
 
 const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   const topNavigation = [
     { name: 'Overview', to: '/dashboard', icon: LayoutDashboard },
@@ -86,6 +95,20 @@ const DashboardLayout = () => {
           {bottomNavigation.map((item) => (
             <NavItem key={item.name} item={item} onClick={() => setIsMobileMenuOpen(false)} />
           ))}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-secondary hover:text-danger hover:bg-danger/10"
+          >
+            <LogOut size={18} />
+            Sign out
+          </button>
+          
+          {user && (
+            <div className="mt-4 pt-4 border-t border-border/50 px-3 flex flex-col">
+              <span className="text-sm font-medium truncate">{user.name}</span>
+              <span className="text-xs text-secondary truncate">{user.email}</span>
+            </div>
+          )}
         </div>
       </div>
 

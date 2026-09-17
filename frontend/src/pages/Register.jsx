@@ -5,23 +5,18 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { Mail, Lock, User } from 'lucide-react';
 import GithubBrandIcon from '../components/ui/GithubBrandIcon';
+import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({ 
-    name: '', 
-    email: '', 
-    password: '',
-    confirmPassword: ''
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [errors, setErrors] = useState({});
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
+    if (!formData.name) newErrors.name = 'Name is required';
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -29,16 +24,13 @@ const Register = () => {
     }
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    }
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
     }
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -49,11 +41,14 @@ const Register = () => {
     setErrors({});
     setIsLoading(true);
     
-    // Mock API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await register(formData.name, formData.email, formData.password);
       navigate('/dashboard');
-    }, 1500);
+    } catch (err) {
+      setErrors({ email: err.response?.data?.message || 'Registration failed' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -67,9 +62,9 @@ const Register = () => {
   return (
     <Card className="bg-background/80 backdrop-blur-xl border-border/50  ">
       <CardHeader className="text-center pb-2 border-none">
-        <h1 className="text-2xl font-semibold tracking-tight mt-2">Create your developer profile</h1>
-        <p className="text-sm text-secondary mt-1 px-4">
-          Start understanding your strengths and skill gaps.
+        <h1 className="text-2xl font-semibold tracking-tight mt-2">Create an account</h1>
+        <p className="text-sm text-secondary mt-1">
+          Join DevSignal to analyze your developer profile.
         </p>
       </CardHeader>
       
@@ -86,7 +81,7 @@ const Register = () => {
             error={errors.name}
             autoComplete="name"
           />
-          
+
           <Input 
             label="Email" 
             type="email" 
@@ -110,26 +105,14 @@ const Register = () => {
             error={errors.password}
             autoComplete="new-password"
           />
-          
-          <Input 
-            label="Confirm Password" 
-            type="password" 
-            name="confirmPassword"
-            icon={Lock} 
-            placeholder="••••••••"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            error={errors.confirmPassword}
-            autoComplete="new-password"
-          />
 
           <Button 
             type="submit" 
             variant="primary" 
-            className="w-full mt-4 h-11 "
+            className="w-full mt-2 h-11"
             isLoading={isLoading}
           >
-            Create account
+            Create Account
           </Button>
         </form>
 
@@ -146,13 +129,10 @@ const Register = () => {
           variant="secondary" 
           className="w-full h-11 bg-surface/50 border-border/50"
           icon={<GithubBrandIcon size={18} />}
-          onClick={() => {
-            setIsLoading(true);
-            setTimeout(() => navigate('/dashboard'), 1500);
-          }}
+          onClick={() => {}}
           disabled={isLoading}
         >
-          Continue with GitHub
+          Sign up with GitHub
         </Button>
 
         <p className="text-sm text-secondary text-center mt-6">
