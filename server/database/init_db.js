@@ -1,36 +1,22 @@
-const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
+const { Pool } = require('pg');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-});
+async function initDB() {
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL
+  });
 
-const initDB = async () => {
   try {
-    console.log('Connecting to database...');
-    
-    // Read schema and seed files
-    const schemaSql = fs.readFileSync(path.join(__dirname, 'schema.sql')).toString();
-    const seedSql = fs.readFileSync(path.join(__dirname, 'seed.sql')).toString();
-
-    console.log('Executing schema...');
-    await pool.query(schemaSql);
-    
-    console.log('Executing seed data...');
-    await pool.query(seedSql);
-
-    console.log('Database initialized and seeded successfully!');
-  } catch (err) {
-    console.error('Error initializing database:', err);
+    const schema = fs.readFileSync(path.join(__dirname, '../schema.sql'), 'utf8');
+    await pool.query(schema);
+    console.log('Database initialized successfully.');
+  } catch (error) {
+    console.error('Error initializing database:', error);
   } finally {
     await pool.end();
   }
-};
+}
 
 initDB();
