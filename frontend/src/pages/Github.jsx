@@ -1,133 +1,170 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import ActivityHeatmap from '../components/ui/ActivityHeatmap';
-import LanguageDistribution from '../components/ui/LanguageDistribution';
-import GithubIcon from '../components/ui/GithubBrandIcon';
 import { 
+  BookOpen, 
   Star, 
   Users, 
   GitCommit, 
-  BookOpen, 
   Activity, 
   BrainCircuit, 
   AlertTriangle,
   Link2,
-  Clock
+  Clock,
+  RefreshCw,
+  LogOut
 } from 'lucide-react';
+import GithubBrandIcon from '../components/ui/GithubBrandIcon';
+import { githubApi } from '../lib/api';
 
 const MetricCard = ({ title, value, icon: Icon }) => (
   <Card className="flex flex-col">
-    <CardContent className="p-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-sm font-medium text-secondary">{title}</p>
-          <h3 className="text-3xl font-bold tracking-tighter text-primary mt-2">{value}</h3>
-        </div>
-        <div className="p-2 bg-surfaceHover rounded-md text-secondary">
-          <Icon size={20} />
-        </div>
+    <CardContent className="p-4 flex items-center justify-between">
+      <div>
+        <p className="text-xs text-secondary font-medium uppercase tracking-wider">{title}</p>
+        <h4 className="text-2xl font-bold mt-1 tracking-tight">{value}</h4>
+      </div>
+      <div className="w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center text-primary">
+        <Icon size={18} />
       </div>
     </CardContent>
   </Card>
 );
 
 const Github = () => {
-  const [username, setUsername] = useState('alexdeveloper');
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState({ connected: false });
+  const [overview, setOverview] = useState(null);
+  const [repos, setRepos] = useState([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
 
-  const handleConnect = () => {
-    setIsConnecting(true);
-    setTimeout(() => setIsConnecting(false), 1000);
+  const fetchData = async () => {
+    try {
+      const statusRes = await githubApi.getStatus();
+      setStatus(statusRes.data);
+      
+      if (statusRes.data.connected) {
+        const [overviewRes, repoRes] = await Promise.all([
+          githubApi.getOverview(),
+          githubApi.getRepositories()
+        ]);
+        setOverview(overviewRes.data);
+        setRepos(repoRes.data.repositories || []);
+      }
+    } catch (error) {
+      console.error('Error fetching GitHub data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const repositories = [
-    { name: 'MarketMind AI', lang: 'Python', stars: 84, forks: 12, updated: '2 days ago', activity: 'High' },
-    { name: 'Smart Library', lang: 'TypeScript', stars: 45, forks: 8, updated: '1 week ago', activity: 'Medium' },
-    { name: 'QueryFlow', lang: 'JavaScript', stars: 32, forks: 4, updated: '2 weeks ago', activity: 'High' },
-    { name: 'DevSignal', lang: 'React', stars: 25, forks: 2, updated: '3 days ago', activity: 'Very High' },
-  ];
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleConnect = async () => {
+    try {
+      const authRes = await githubApi.auth();
+      window.location.href = authRes.data.url;
+    } catch (error) {
+      console.error('Failed to get auth URL', error);
+    }
+  };
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      await githubApi.sync();
+      await fetchData();
+    } catch (error) {
+      console.error('Sync failed', error);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    setIsDisconnecting(true);
+    try {
+      await githubApi.disconnect();
+      setStatus({ connected: false });
+      setOverview(null);
+      setRepos([]);
+    } catch (error) {
+      console.error('Disconnect failed', error);
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="flex justify-center p-12">Loading GitHub intelligence...</div>;
+  }
+
+  if (!status.connected) {
+    return (
+      <div className="space-y-8 flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="w-20 h-20 bg-surface border border-border rounded-full flex items-center justify-center text-primary mb-4">
+          <GithubBrandIcon size={40} />
+        </div>
+        <h1 className="text-3xl font-semibold tracking-tight text-center">GitHub Intelligence</h1>
+        <p className="text-secondary text-center max-w-md">
+          Connect your GitHub account to analyze your repositories, track your engineering impact, and uncover insights into your coding habits.
+        </p>
+        <Button variant="primary" onClick={handleConnect} className="h-12 px-8 rounded-full">
+          Connect GitHub Account
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 ">
-      
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-semibold tracking-tight">GitHub Intelligence</h1>
-          <p className="text-secondary">Understand how you build.</p>
+          <p className="text-secondary flex items-center gap-2">
+            Connected as <span className="font-semibold text-primary">{status.username}</span>
+            {status.lastSynced && (
+              <span className="text-xs ml-2 opacity-70">
+                Last synced: {new Date(status.lastSynced).toLocaleString()}
+              </span>
+            )}
+          </p>
         </div>
         
-        {/* Connect Section */}
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <Input 
-            placeholder="GitHub Username" 
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full md:w-64 h-10"
-            icon={GithubIcon}
-          />
+        {/* Actions Section */}
+        <div className="flex items-center gap-3 w-full md:w-auto">
           <Button 
-            variant="primary" 
-            onClick={handleConnect} 
-            isLoading={isConnecting}
-            className="h-10 whitespace-nowrap"
+            variant="secondary" 
+            onClick={handleSync} 
+            isLoading={isSyncing}
+            className="h-10 whitespace-nowrap bg-surface/50 hover:bg-surface border-border/50"
+            icon={<RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />}
           >
-            Connect
+            Sync Data
+          </Button>
+          <Button 
+            variant="secondary" 
+            onClick={handleDisconnect} 
+            isLoading={isDisconnecting}
+            className="h-10 whitespace-nowrap bg-surface/50 hover:bg-danger/20 hover:text-danger hover:border-danger/30 border-border/50 transition-colors"
+            icon={<LogOut size={16} />}
+          >
+            Disconnect
           </Button>
         </div>
       </div>
 
       {/* 4 Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard title="Repositories" value="42" icon={BookOpen} />
-        <MetricCard title="Total Stars" value="186" icon={Star} />
-        <MetricCard title="Followers" value="73" icon={Users} />
-        <MetricCard title="Contributions" value="1,284" icon={GitCommit} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Contribution Chart */}
-        <Card className="lg:col-span-2 flex flex-col">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity size={18} className="text-accent" />
-              Contribution activity
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 flex items-center justify-center overflow-hidden">
-            <div className="w-full">
-              <ActivityHeatmap />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Engineering Insights */}
-        <Card className="flex flex-col bg-surface/30 border-accent/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-accent">
-              <BrainCircuit size={18} />
-              Engineering Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1">
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
-                <p className="text-sm text-primary">Your strongest language is <span className="font-semibold text-accent">JavaScript</span>.</p>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
-                <p className="text-sm text-primary">You consistently work on <span className="font-semibold text-accent">full-stack projects</span>.</p>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
-                <p className="text-sm text-primary">Your contribution activity has <span className="font-semibold text-accent">increased</span> over the last 3 months.</p>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+        <MetricCard title="Repositories" value={overview?.repositoryCount || 0} icon={BookOpen} />
+        <MetricCard title="Total Stars" value={overview?.totalStars || 0} icon={Star} />
+        <MetricCard title="Total Forks" value={overview?.totalForks || 0} icon={Activity} />
+        <MetricCard title="Open Issues" value={overview?.totalOpenIssues || 0} icon={AlertTriangle} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -137,7 +174,7 @@ const Github = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen size={18} className="text-secondary" />
-              Repository quality
+              Repositories
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -148,39 +185,36 @@ const Github = () => {
                     <th className="px-6 py-3 font-medium">Repository</th>
                     <th className="px-6 py-3 font-medium">Language</th>
                     <th className="px-6 py-3 font-medium">Stars</th>
-                    <th className="px-6 py-3 font-medium">Activity</th>
-                    <th className="px-6 py-3 font-medium">Updated</th>
+                    <th className="px-6 py-3 font-medium">Forks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
-                  {repositories.map((repo, i) => (
-                    <tr key={i} className="hover:bg-surfaceHover/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-primary flex items-center gap-2">
-                        <GithubIcon size={14} className="text-secondary" />
-                        {repo.name}
-                      </td>
-                      <td className="px-6 py-4 text-secondary">{repo.lang}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1 text-secondary">
-                          <Star size={14} className="text-yellow-500" />
-                          <span>{repo.stars}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 text-[10px] uppercase font-bold rounded-full border ${
-                          repo.activity === 'Very High' ? 'bg-accent/10 text-accent border-accent/20' :
-                          repo.activity === 'High' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-                          'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
-                        }`}>
-                          {repo.activity}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-secondary flex items-center gap-1">
-                        <Clock size={12} />
-                        {repo.updated}
-                      </td>
-                    </tr>
-                  ))}
+                  {repos.length === 0 ? (
+                    <tr><td colSpan="4" className="text-center py-6 text-secondary">No repositories found.</td></tr>
+                  ) : (
+                    repos.map((repo, i) => (
+                      <tr key={i} className="hover:bg-surfaceHover/50 transition-colors">
+                        <td className="px-6 py-4 font-medium text-primary flex items-center gap-2">
+                          <GithubBrandIcon size={14} className="text-secondary" />
+                          <a href={repo.url} target="_blank" rel="noreferrer" className="hover:underline">{repo.name}</a>
+                          {repo.isPrivate && <span className="text-[10px] bg-surface border border-border px-1.5 rounded uppercase ml-2 text-secondary">Private</span>}
+                        </td>
+                        <td className="px-6 py-4 text-secondary">{repo.language || 'Unknown'}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1 text-secondary">
+                            <Star size={14} className="text-yellow-500" />
+                            <span>{repo.stars}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-secondary">
+                          <div className="flex items-center gap-1">
+                            <Activity size={14} />
+                            <span>{repo.forks}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -198,28 +232,32 @@ const Github = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <LanguageDistribution />
+              <div className="space-y-4">
+                {overview?.languages?.length > 0 ? (
+                  overview.languages.slice(0, 5).map((lang, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{lang.language}</span>
+                      <span className="text-xs text-secondary">{lang.count} repos</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-secondary">No language data available.</p>
+                )}
+              </div>
             </CardContent>
           </Card>
           
           <Card className="flex-1">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertTriangle size={18} className="text-warning" />
-                Areas to improve
+                <BrainCircuit size={18} className="text-accent" />
+                Engineering Insights
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {['Open source contribution', 'Testing', 'Documentation'].map((area, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-md bg-surface/50 border border-border">
-                    <span className="text-sm font-medium text-primary">{area}</span>
-                    <span className="text-xs text-warning bg-warning/10 px-2 py-0.5 rounded border border-warning/20">
-                      Needs Work
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-sm text-secondary">
+                Connect additional data sources and solve DSA problems to generate AI insights.
+              </p>
             </CardContent>
           </Card>
 

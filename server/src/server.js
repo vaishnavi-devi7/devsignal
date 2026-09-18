@@ -27,6 +27,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/github', require('./routes/githubRoutes'));
+app.use('/api/dsa', require('./routes/dsaRoutes'));
 
 // Error Middleware
 app.use(errorHandler);

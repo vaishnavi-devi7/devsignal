@@ -61,3 +61,20 @@ CREATE TABLE IF NOT EXISTS github_repositories (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(user_id, github_repo_id)
 );
+
+CREATE TABLE IF NOT EXISTS dsa_problems (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  platform VARCHAR(255) NOT NULL,
+  problem_url VARCHAR(1024),
+  difficulty VARCHAR(50) NOT NULL CHECK (difficulty IN ('Easy', 'Medium', 'Hard')),
+  topic VARCHAR(255),
+  status VARCHAR(50) NOT NULL CHECK (status IN ('Solved', 'Attempted', 'Unsolved')),
+  language VARCHAR(100),
+  solved_at DATE,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, platform, title)
+);

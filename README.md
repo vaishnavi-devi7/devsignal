@@ -6,7 +6,7 @@ This project was built to demonstrate full-stack engineering, clean architecture
 
 ---
 
-## 🚀 Features
+## Features
 
 - **Developer Readiness Scoring:** Aggregates metrics across GitHub, LeetCode, and resumes into a unified performance score.
 - **GitHub Intelligence:** Analyzes repositories, contribution frequency, and language proficiency to extract actionable engineering insights.
@@ -17,7 +17,7 @@ This project was built to demonstrate full-stack engineering, clean architecture
 
 ---
 
-## 🏗 Architecture & Tech Stack
+## Architecture & Tech Stack
 
 ### Frontend
 - **Framework:** React 18 + Vite
@@ -36,7 +36,7 @@ This project was built to demonstrate full-stack engineering, clean architecture
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
 *(Add screenshots of your application here)*
 
@@ -47,7 +47,7 @@ This project was built to demonstrate full-stack engineering, clean architecture
 
 ---
 
-## ⚙️ Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 - Node.js (v18+)
@@ -88,7 +88,7 @@ The frontend will run on `http://localhost:5173` and the backend on `http://loca
 
 ---
 
-## 🔑 Environment Variables
+## Environment Variables
 
 ### Server (`server/.env`)
 See `server/.env.example` for the required keys:
@@ -99,7 +99,7 @@ See `server/.env.example` for the required keys:
 
 ---
 
-## 📚 API Documentation
+## API Documentation
 
 ### Authentication (`/api/auth`)
 - `POST /register` - Register a new user (Requires: name, email, password)
@@ -114,7 +114,7 @@ See `server/.env.example` for the required keys:
 
 ---
 
-## 🗄 Database Structure
+## Database Structure
 
 The PostgreSQL schema is fully normalized and heavily indexed for performance:
 
@@ -130,7 +130,7 @@ The PostgreSQL schema is fully normalized and heavily indexed for performance:
 
 ---
 
-## 🧠 AI Architecture
+## AI Architecture
 
 The AI layer is completely isolated within `server/services/aiService.js`.
 - **Strict Structured Outputs:** The service strictly enforces JSON schema adherence via the API layer, parsing and validating before returning data to the controllers.
@@ -140,9 +140,10 @@ The AI layer is completely isolated within `server/services/aiService.js`.
 
 ---
 
-## 🔮 Future Improvements
+## Future Improvements
 
 - **OAuth Integration:** Add "Sign in with GitHub" to streamline onboarding.
 - **Real-time Webhooks:** Listen for GitHub push events to update the dashboard in real-time.
 - **Frontend State Management:** Migrate to Redux Toolkit or Zustand as the application scales.
 - **Dockerization:** Add a `docker-compose.yml` for single-command orchestration of the frontend, backend, and PostgreSQL database.
+

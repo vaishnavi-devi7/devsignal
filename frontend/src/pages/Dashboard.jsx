@@ -3,27 +3,33 @@ import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { 
   Activity, 
   Code2, 
-  Briefcase, 
-  FileText, 
-  AlertCircle, 
-  ArrowRight,
-  GitCommit,
-  CheckCircle2,
-  Terminal,
-  Trophy
+  FileText 
 } from 'lucide-react';
 import GithubBrandIcon from '../components/ui/GithubBrandIcon';
-import CircularProgress from '../components/ui/CircularProgress';
-import SkillChart from '../components/ui/SkillChart';
-import api from '../lib/api';
+import api, { githubApi, dsaApi } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import Button from '../components/ui/Button';
 
-const MetricMiniCard = ({ title, value, icon: Icon }) => (
-  <Card className="flex flex-col">
-    <CardContent className="p-4 flex items-center justify-between">
+const MetricMiniCard = ({ title, value, icon: Icon, to, subtitle }) => (
+  <Card className="flex flex-col h-full hover:border-accent/30 transition-colors">
+    <CardContent className="p-4 flex items-center justify-between h-full">
       <div>
         <p className="text-xs text-secondary font-medium uppercase tracking-wider">{title}</p>
-        <h4 className="text-2xl font-bold mt-1 tracking-tight">{value}</h4>
+        {value === 'Connect' ? (
+          <Link to={to} className="mt-2 inline-block">
+            <Button variant="secondary" size="sm" className="h-7 text-xs">Connect</Button>
+          </Link>
+        ) : value === 'Track' ? (
+          <Link to={to} className="mt-2 inline-block">
+            <Button variant="secondary" size="sm" className="h-7 text-xs">Start Tracking</Button>
+          </Link>
+        ) : (
+          <>
+            <h4 className="text-2xl font-bold mt-1 tracking-tight">{value}</h4>
+            {subtitle && <p className="text-xs text-secondary">{subtitle}</p>}
+          </>
+        )}
       </div>
       <div className="w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center text-primary">
         <Icon size={18} />
@@ -35,13 +41,21 @@ const MetricMiniCard = ({ title, value, icon: Icon }) => (
 const Dashboard = () => {
   const { user } = useAuth();
   const [data, setData] = useState(null);
+  const [githubOverview, setGithubOverview] = useState(null);
+  const [dsaStats, setDsaStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await api.get('/dashboard');
-        setData(response.data);
+        const [dashboardRes, githubRes, dsaRes] = await Promise.all([
+          api.get('/dashboard'),
+          githubApi.getOverview().catch(() => ({ data: { connected: false } })),
+          dsaApi.getStats().catch(() => ({ data: null }))
+        ]);
+        setData(dashboardRes.data);
+        setGithubOverview(githubRes.data);
+        setDsaStats(dsaRes.data);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -55,6 +69,14 @@ const Dashboard = () => {
     return <div className="flex justify-center p-12">Loading...</div>;
   }
 
+  const dsaValue = dsaStats && dsaStats.totalSolved > 0 
+    ? `${dsaStats.totalSolved} Solved` 
+    : dsaStats ? '0 Solved' : 'Track';
+    
+  const dsaSubtitle = dsaStats && dsaStats.totalSolved > 0 
+    ? `${dsaStats.currentStreak} Day Streak` 
+    : null;
+
   return (
     <div className="space-y-6">
       
@@ -67,9 +89,22 @@ const Dashboard = () => {
       {/* Row 1: Core Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricMiniCard title="Overall Score" value={data?.profile?.bio ? "Ready" : "Incomplete"} icon={Activity} />
-        <MetricMiniCard title="GitHub Impact" value="N/A" icon={GithubBrandIcon} />
-        <MetricMiniCard title="DSA Mastery" value="N/A" icon={Code2} />
-        <MetricMiniCard title="Resume Match" value="N/A" icon={FileText} />
+        
+        <MetricMiniCard 
+          title="GitHub Impact" 
+          value={githubOverview?.connected ? `${githubOverview.totalStars} Stars` : "Connect"} 
+          icon={GithubBrandIcon}
+          to="/github"
+        />
+        
+        <MetricMiniCard 
+          title="DSA Mastery" 
+          value={dsaValue} 
+          subtitle={dsaSubtitle}
+          icon={Code2} 
+          to="/dsa" 
+        />
+        <MetricMiniCard title="Resume Match" value="Connect" icon={FileText} to="/resume" />
       </div>
 
       {/* Profile summary */}
