@@ -78,3 +78,34 @@ CREATE TABLE IF NOT EXISTS dsa_problems (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(user_id, platform, title)
 );
+
+CREATE TABLE IF NOT EXISTS resume_profiles (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+    file_name TEXT,
+    file_type TEXT,
+
+    raw_text TEXT,
+
+    full_name TEXT,
+    email TEXT,
+    phone TEXT,
+    location TEXT,
+
+    skills JSONB DEFAULT '[]'::jsonb,
+    programming_languages JSONB DEFAULT '[]'::jsonb,
+    frameworks JSONB DEFAULT '[]'::jsonb,
+    databases JSONB DEFAULT '[]'::jsonb,
+    tools JSONB DEFAULT '[]'::jsonb,
+
+    education JSONB DEFAULT '[]'::jsonb,
+    experience JSONB DEFAULT '[]'::jsonb,
+    projects JSONB DEFAULT '[]'::jsonb,
+    certifications JSONB DEFAULT '[]'::jsonb,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE(user_id)
+);

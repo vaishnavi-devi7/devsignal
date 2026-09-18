@@ -37,3 +37,12 @@ export const dsaApi = {
   getStats: () => api.get('/dsa/stats'),
   getTopics: () => api.get('/dsa/topics'),
 };
+
+export const resumeApi = {
+  getResume: () => api.get('/resume'),
+  uploadResume: (data) => api.post('/resume/upload', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  updateResume: (data) => api.put('/resume', data),
+  deleteResume: () => api.delete('/resume')
+};

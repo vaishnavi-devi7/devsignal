@@ -6,7 +6,7 @@ import {
   FileText 
 } from 'lucide-react';
 import GithubBrandIcon from '../components/ui/GithubBrandIcon';
-import api, { githubApi, dsaApi } from '../lib/api';
+import api, { githubApi, dsaApi, resumeApi } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
@@ -20,9 +20,9 @@ const MetricMiniCard = ({ title, value, icon: Icon, to, subtitle }) => (
           <Link to={to} className="mt-2 inline-block">
             <Button variant="secondary" size="sm" className="h-7 text-xs">Connect</Button>
           </Link>
-        ) : value === 'Track' ? (
+        ) : value === 'Upload' || value === 'Track' ? (
           <Link to={to} className="mt-2 inline-block">
-            <Button variant="secondary" size="sm" className="h-7 text-xs">Start Tracking</Button>
+            <Button variant="secondary" size="sm" className="h-7 text-xs">{value === 'Upload' ? 'Upload Resume' : 'Start Tracking'}</Button>
           </Link>
         ) : (
           <>
@@ -43,19 +43,22 @@ const Dashboard = () => {
   const [data, setData] = useState(null);
   const [githubOverview, setGithubOverview] = useState(null);
   const [dsaStats, setDsaStats] = useState(null);
+  const [resumeData, setResumeData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const [dashboardRes, githubRes, dsaRes] = await Promise.all([
+        const [dashboardRes, githubRes, dsaRes, resumeRes] = await Promise.all([
           api.get('/dashboard'),
           githubApi.getOverview().catch(() => ({ data: { connected: false } })),
-          dsaApi.getStats().catch(() => ({ data: null }))
+          dsaApi.getStats().catch(() => ({ data: null })),
+          resumeApi.getResume().catch(() => ({ data: { resume: null } }))
         ]);
         setData(dashboardRes.data);
         setGithubOverview(githubRes.data);
         setDsaStats(dsaRes.data);
+        setResumeData(resumeRes.data.resume);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -104,7 +107,14 @@ const Dashboard = () => {
           icon={Code2} 
           to="/dsa" 
         />
-        <MetricMiniCard title="Resume Match" value="Connect" icon={FileText} to="/resume" />
+        
+        <MetricMiniCard 
+          title="Resume Status" 
+          value={resumeData ? "Uploaded" : "Upload"} 
+          subtitle={resumeData ? `Updated ${new Date(resumeData.updated_at).toLocaleDateString()}` : null}
+          icon={FileText} 
+          to="/resume" 
+        />
       </div>
 
       {/* Profile summary */}
