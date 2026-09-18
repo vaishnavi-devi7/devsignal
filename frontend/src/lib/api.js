@@ -46,3 +46,12 @@ export const resumeApi = {
   updateResume: (data) => api.put('/resume', data),
   deleteResume: () => api.delete('/resume')
 };
+
+export const jobsApi = {
+  getJobs: (params) => api.get('/jobs', { params }),
+  getJob: (id) => api.get(`/jobs/${id}`),
+  getJobMatch: (id) => api.get(`/jobs/${id}/match`),
+  saveJob: (id) => api.post(`/jobs/${id}/save`),
+  unsaveJob: (id) => api.delete(`/jobs/${id}/save`),
+  getSavedJobs: () => api.get('/jobs/saved')
+};

@@ -109,3 +109,34 @@ CREATE TABLE IF NOT EXISTS resume_profiles (
 
     UNIQUE(user_id)
 );
+
+CREATE TABLE IF NOT EXISTS jobs (
+    id SERIAL PRIMARY KEY,
+    external_id TEXT UNIQUE,
+    title TEXT NOT NULL,
+    company TEXT NOT NULL,
+    location TEXT,
+    remote_type TEXT,
+    employment_type TEXT,
+    description TEXT,
+    apply_url TEXT,
+    source TEXT,
+    posted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    skills JSONB DEFAULT '[]'::jsonb,
+    programming_languages JSONB DEFAULT '[]'::jsonb,
+    frameworks JSONB DEFAULT '[]'::jsonb,
+    databases JSONB DEFAULT '[]'::jsonb,
+    tools JSONB DEFAULT '[]'::jsonb,
+    experience_min INTEGER,
+    experience_max INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS user_saved_jobs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    job_id INTEGER NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, job_id)
+);
