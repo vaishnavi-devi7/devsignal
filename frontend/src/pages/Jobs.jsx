@@ -13,9 +13,10 @@ import {
   Activity,
   ArrowLeft,
   Calendar,
-  Globe
+  Globe,
+  Sparkles
 } from 'lucide-react';
-import { jobsApi } from '../lib/api';
+import { jobsApi, aiApi } from '../lib/api';
 
 const Jobs = () => {
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'saved'
@@ -32,6 +33,9 @@ const Jobs = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [jobMatch, setJobMatch] = useState(null);
   const [loadingMatch, setLoadingMatch] = useState(false);
+  const [aiInsight, setAiInsight] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
 
   useEffect(() => {
     fetchJobs();
@@ -74,6 +78,8 @@ const Jobs = () => {
 
   const viewJobDetails = async (job) => {
     setSelectedJob(job);
+    setAiInsight(null);
+    setAiError(null);
     try {
       setLoadingMatch(true);
       const res = await jobsApi.getJobMatch(job.id);
@@ -83,6 +89,25 @@ const Jobs = () => {
       setJobMatch(null);
     } finally {
       setLoadingMatch(false);
+    }
+  };
+
+  const generateInsight = async () => {
+    if (!selectedJob) return;
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const res = await aiApi.getJobInsight(selectedJob.id);
+      setAiInsight(res.data);
+    } catch (err) {
+      console.error(err);
+      if (err.response?.status === 503) {
+        setAiError("AI service is not configured.");
+      } else {
+        setAiError("AI insights are currently unavailable.");
+      }
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -121,7 +146,7 @@ const Jobs = () => {
     return (
       <div className="space-y-6">
         <button 
-          onClick={() => { setSelectedJob(null); setJobMatch(null); }}
+          onClick={() => { setSelectedJob(null); setJobMatch(null); setAiInsight(null); setAiError(null); }}
           className="flex items-center gap-2 text-sm text-secondary hover:text-primary transition-colors"
         >
           <ArrowLeft size={16} /> Back to jobs
@@ -271,6 +296,81 @@ const Jobs = () => {
                   </div>
                 ) : (
                   <div className="text-center p-6 text-sm text-secondary">Match data unavailable.</div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* AI Job Insight */}
+            <Card className="border-accent/30 overflow-hidden relative mt-6">
+              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                <Sparkles size={120} />
+              </div>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="flex items-center gap-2 text-accent">
+                  <Sparkles size={18} />
+                  AI Job Insight
+                </CardTitle>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={generateInsight}
+                  disabled={aiLoading}
+                >
+                  {aiLoading ? "Analyzing this role..." : aiInsight ? "Refresh Analysis" : "Explain this match"}
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {aiError ? (
+                  <div className="flex items-center gap-2 text-warning bg-warning/10 p-4 rounded-md text-sm border border-warning/20">
+                    <AlertCircle size={16} />
+                    {aiError}
+                  </div>
+                ) : !aiInsight ? (
+                  <div className="text-sm text-secondary py-4">
+                    Get an AI-powered explanation of why your profile fits this role and what you can improve.
+                  </div>
+                ) : (
+                  <div className="space-y-6 mt-4 relative z-10">
+                    <p className="text-sm text-primary leading-relaxed bg-surface/50 p-4 rounded-lg border border-border">
+                      {aiInsight.summary}
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="text-sm font-medium text-green-500 mb-2 flex items-center gap-2">Why It Fits</h4>
+                        <ul className="space-y-1">
+                          {aiInsight.whyItFits?.map((item, i) => (
+                            <li key={i} className="text-sm text-secondary flex items-start gap-2">
+                              <span className="text-green-500 mt-0.5">•</span> <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-yellow-500 mb-2 flex items-center gap-2">What to Improve</h4>
+                        <ul className="space-y-1">
+                          {aiInsight.whatToImprove?.map((item, i) => (
+                            <li key={i} className="text-sm text-secondary flex items-start gap-2">
+                              <span className="text-yellow-500 mt-0.5">•</span> <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {aiInsight.interviewFocus?.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-primary mb-2">Interview Focus</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {aiInsight.interviewFocus.map((focus, i) => (
+                            <span key={i} className="px-2.5 py-1 bg-surface border border-border rounded-md text-xs text-primary">
+                              {focus}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </CardContent>
             </Card>

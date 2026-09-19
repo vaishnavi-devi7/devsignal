@@ -140,3 +140,15 @@ CREATE TABLE IF NOT EXISTS user_saved_jobs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, job_id)
 );
+
+-- Phase 6: AI Insights Cache
+CREATE TABLE IF NOT EXISTS ai_insights (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    insight_type VARCHAR(100) NOT NULL,
+    input_hash VARCHAR(255) NOT NULL,
+    response_json JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, insight_type, input_hash)
+);

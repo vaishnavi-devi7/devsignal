@@ -55,3 +55,10 @@ export const jobsApi = {
   unsaveJob: (id) => api.delete(`/jobs/${id}/save`),
   getSavedJobs: () => api.get('/jobs/saved')
 };
+
+export const aiApi = {
+  getProfileAnalysis: () => api.get('/ai/profile-analysis'),
+  getRoadmap: () => api.get('/ai/roadmap'),
+  getJobInsight: (id) => api.get(`/ai/jobs/${id}/insight`),
+  getInterviewPrep: () => api.get('/ai/interview-prep')
+};

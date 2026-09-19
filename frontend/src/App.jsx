@@ -16,6 +16,7 @@ import DSA from './pages/DSA';
 import Resume from './pages/Resume';
 import Jobs from './pages/Jobs';
 import Roadmap from './pages/Roadmap';
+import Interview from './pages/Interview';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 
@@ -50,6 +51,7 @@ const App = () => {
             <Route path="/resume" element={<Resume />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/roadmap" element={<Roadmap />} />
+            <Route path="/interview" element={<Interview />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
           </Route>

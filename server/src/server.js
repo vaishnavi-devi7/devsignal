@@ -30,6 +30,7 @@ app.use('/api/github', require('./routes/githubRoutes'));
 app.use('/api/dsa', require('./routes/dsaRoutes'));
 app.use('/api/resume', require('./routes/resumeRoutes'));
 app.use('/api/jobs', require('./routes/jobRoutes'));
+app.use('/api/ai', require('./routes/aiRoutes'));
 
 // Error Middleware
 app.use(errorHandler);

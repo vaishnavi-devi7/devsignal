@@ -33,6 +33,7 @@ const DashboardLayout = () => {
     { name: 'Resume', to: '/resume', icon: FileText },
     { name: 'Job Match', to: '/jobs', icon: Briefcase },
     { name: 'Roadmap', to: '/roadmap', icon: Map },
+    { name: 'Interview Prep', to: '/interview', icon: Code2 },
   ];
 
   const bottomNavigation = [
