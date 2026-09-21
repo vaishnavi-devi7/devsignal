@@ -38,7 +38,8 @@ This project was built to demonstrate full-stack engineering, clean architecture
 
 ## Screenshots
 
-*(Add screenshots of your application here)*
+<img width="1468" height="801" alt="Screenshot 2026-09-21 at 1 54 00 PM" src="https://github.com/user-attachments/assets/3a266264-05bd-4ec6-8ba4-84231214c44a" />
+
 
 - **Dashboard:** `![Dashboard](./docs/dashboard.png)`
 - **GitHub Intelligence:** `![GitHub](./docs/github.png)`
