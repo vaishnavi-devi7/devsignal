@@ -1,150 +1,1155 @@
 # DevSignal
 
-**DevSignal** is a Developer Intelligence Platform designed to analyze a software engineer's GitHub activity, DSA (Data Structures and Algorithms) progress, resume, and skills against real job descriptions. It provides a centralized, data-driven readiness score and a personalized improvement roadmap.
+**DevSignal** is a full-stack Developer Intelligence Platform that brings together GitHub activity, DSA progress, resume information, and job requirements into a centralized developer profile.
 
-This project was built to demonstrate full-stack engineering, clean architecture, AI integration, and production-grade database design.
+It helps developers understand their current profile, identify skill gaps, track their progress, and generate personalized improvement guidance using deterministic analysis and optional AI-powered insights.
+
+> Built as a portfolio project to demonstrate full-stack engineering, API integrations, authentication, database design, developer analytics, and AI integration.
 
 ---
 
 ## Features
 
-- **Developer Readiness Scoring:** Aggregates metrics across GitHub, LeetCode, and resumes into a unified performance score.
-- **GitHub Intelligence:** Analyzes repositories, contribution frequency, and language proficiency to extract actionable engineering insights.
-- **DSA Analytics:** Tracks problem-solving velocity, identifies weak topics (e.g., Dynamic Programming vs. Arrays), and recommends targeted focus areas.
-- **Resume Parsing & Scoring:** Evaluates resumes for ATS compatibility, technical depth, and project impact, highlighting missing required skills.
-- **Job Match Intelligence:** Compares developer profiles against specific Job Descriptions to identify exact skill gaps (Matched, Partial, Missing).
-- **AI-Powered Roadmaps:** Generates a personalized, phased weekly learning roadmap to bridge identified skill gaps.
+### Developer Dashboard
+
+A centralized dashboard that brings together the developer's:
+
+- GitHub activity
+- DSA progress
+- Resume status
+- Job matching information
+- Developer profile insights
+- AI-powered recommendations
 
 ---
 
-## Architecture & Tech Stack
+### GitHub Intelligence
 
-### Frontend
-- **Framework:** React 18 + Vite
-- **Routing:** React Router v6
-- **Styling:** Tailwind CSS v4
-- **Charts:** Chart.js + react-chartjs-2
-- **Icons:** Lucide React
-- **Design System:** Custom minimal, dark-themed UI components (inspired by Vercel/Linear).
+DevSignal integrates with GitHub using OAuth and the GitHub API.
 
-### Backend
-- **Framework:** Node.js + Express.js
-- **Database:** PostgreSQL (using `pg` driver)
-- **Authentication:** JWT (JSON Web Tokens) + bcryptjs
-- **External APIs:** GitHub API (Isolated Service)
-- **AI Integration:** Agnostic LLM Service (Structured JSON enforced)
+Features include:
 
----
+- GitHub OAuth authentication
+- Repository synchronization
+- Repository statistics
+- Programming language distribution
+- Stars and forks
+- Repository descriptions
+- Top repositories
+- GitHub profile information
+- Secure GitHub access-token storage
+- Manual repository synchronization
 
-## Screenshots
-
-<img width="1468" height="801" alt="Screenshot 2026-09-21 at 1 54 00 PM" src="https://github.com/user-attachments/assets/3a266264-05bd-4ec6-8ba4-84231214c44a" />
-
-
-- **Dashboard:** `![Dashboard](./docs/dashboard.png)`
-- **GitHub Intelligence:** `![GitHub](./docs/github.png)`
-- **Job Match:** `![Job Match](./docs/jobs.png)`
-- **AI Roadmap:** `![Roadmap](./docs/roadmap.png)`
+GitHub data is fetched through the official GitHub API rather than scraping.
 
 ---
 
-## Installation & Setup
+### DSA Intelligence
 
-### Prerequisites
-- Node.js (v18+)
-- PostgreSQL (v14+)
+DevSignal provides a centralized DSA tracking system.
 
-### 1. Database Setup
-Ensure PostgreSQL is running, then create a new database named `devsignal`.
+Features include:
 
-### 2. Backend Setup
-```bash
+- Add solved problems
+- Edit problems
+- Delete problems
+- Search problems
+- Filter by:
+  - Difficulty
+  - Topic
+  - Platform
+  - Status
+- DSA statistics
+- Topic-level progress
+- Solving streak information
+- Dashboard DSA statistics
+
+#### Codeforces Sync
+
+Codeforces problems can be synchronized automatically using the official Codeforces API.
+
+The synchronization imports information such as:
+
+- Problem title
+- Contest information
+- Difficulty
+- Topic
+- Programming language
+- Solved status
+- Problem platform
+
+Other platforms can still be tracked manually when an official supported API integration is not available.
+
+DevSignal does not use credential scraping or unofficial platform scraping.
+
+---
+
+### Resume Intelligence
+
+DevSignal supports resume upload and processing.
+
+Supported formats:
+
+- PDF
+- DOCX
+
+The backend extracts structured information from uploaded resumes and stores the processed profile information.
+
+Features include:
+
+- Resume upload
+- Resume replacement
+- Resume deletion
+- Resume persistence
+- Basic resume information extraction
+- File validation
+- Upload size validation
+
+Resume processing is deterministic and does not require an AI provider.
+
+---
+
+### Job Intelligence
+
+DevSignal provides deterministic job matching using information from the developer profile.
+
+The matching system considers information from:
+
+- Resume
+- GitHub
+- DSA progress
+
+The matching process evaluates areas such as:
+
+- Skills
+- Programming languages
+- Frameworks
+- Databases
+- Tools
+- DSA progress
+
+Job features include:
+
+- Job search
+- Search and filtering
+- Job details
+- Profile match analysis
+- Save jobs
+- Unsave jobs
+- Saved jobs view
+- Remote/job-type/source filters
+
+The job matching score is calculated by the backend using deterministic rules rather than being generated by the AI model.
+
+---
+
+### AI Intelligence
+
+DevSignal includes an optional AI layer for higher-level developer insights.
+
+Available AI features include:
+
+- AI Profile Analysis
+- AI Roadmap Generation
+- AI Job Insights
+- AI Interview Preparation
+
+The AI layer is isolated in the backend and receives structured developer context rather than sensitive authentication information.
+
+AI profile context can include:
+
+- Resume information
+- GitHub repository information
+- GitHub programming languages
+- DSA statistics
+- Solved DSA topics
+
+Sensitive information such as passwords, password hashes, JWTs, GitHub OAuth state, and GitHub access tokens is excluded from AI context.
+
+### AI Caching
+
+AI responses use deterministic caching based on a SHA-256 input hash.
+
+This helps avoid repeatedly generating the same insight when the underlying developer profile has not changed.
+
+### AI Rate Limiting
+
+AI endpoints are protected with per-user rate limiting to prevent excessive requests.
+
+### AI Configuration
+
+AI features require an API key to be configured in the backend environment.
+
+If an AI provider is not configured, DevSignal continues to work and returns a clear configuration response instead of generating fake AI results.
+
+---
+
+## Architecture
+
+```text
+                         ┌─────────────────────┐
+                         │      DevSignal      │
+                         │      Frontend       │
+                         │   React + Vite      │
+                         └──────────┬──────────┘
+                                    │
+                              REST API / JWT
+                                    │
+                         ┌──────────▼──────────┐
+                         │      Express        │
+                         │      Backend        │
+                         │      Node.js        │
+                         └──────┬──────┬────────┘
+                                │      │
+                    ┌───────────┘      └──────────────┐
+                    │                                  │
+          ┌─────────▼─────────┐              ┌────────▼────────┐
+          │    PostgreSQL     │              │ External APIs   │
+          │     Database      │              │                 │
+          │                   │              │ GitHub API      │
+          │ Users             │              │ Codeforces API  │
+          │ GitHub data       │              │ AI Provider     │
+          │ DSA data          │              └─────────────────┘
+          │ Resume data       │
+          │ Jobs              │
+          │ AI cache          │
+          └───────────────────┘
+## Tech Stack
+Frontend
+React
+Vite
+JavaScript (ES6+)
+Tailwind CSS
+React Router
+Axios
+Chart.js
+react-chartjs-2
+Lucide React
+React Toastify
+Backend
+Node.js
+Express.js
+PostgreSQL
+pg
+JWT
+bcrypt
+REST APIs
+Integrations
+GitHub OAuth
+GitHub REST API
+Codeforces API
+AI
+Provider-agnostic AI service architecture
+Structured AI responses
+SHA-256 based response caching
+Per-user AI rate limiting
+Authentication & Security
+
+DevSignal uses several security mechanisms to protect user accounts and integrations.
+
+Authentication
+JWT-based authentication
+Password hashing using bcrypt
+Protected backend routes
+Authenticated frontend sessions
+GitHub OAuth
+
+GitHub authentication uses OAuth rather than collecting GitHub passwords.
+
+The OAuth flow uses a temporary, single-use authorization code before issuing the application's JWT.
+
+User
+ │
+ ▼
+GitHub Authorization
+ │
+ ▼
+GitHub Callback
+ │
+ ▼
+Temporary OAuth Code
+ │
+ ▼
+DevSignal Exchange Endpoint
+ │
+ ▼
+JWT + User Session
+
+OAuth authorization codes:
+
+Are generated server-side
+Expire after a limited period
+Are single-use
+Are not placed directly in the final authenticated URL as JWTs
+
+GitHub access tokens are stored using encrypted server-side storage.
+
+Database
+
+DevSignal uses PostgreSQL as its primary database.
+
+The current schema includes data for:
+
+Users
+GitHub accounts
+GitHub repositories
+DSA problems
+Resume profiles
+Jobs
+Saved jobs
+AI insights
+OAuth authorization codes
+
+The database schema is maintained in:
+
+server/schema.sql
+
+The schema uses constraints and indexes where required to maintain data integrity and efficient queries.
+
+Project Structure
+devsignal/
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── layouts/
+│   │   ├── context/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   └── utils/
+│   │
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── server/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── middleware/
+│   │   └── ...
+│   │
+│   ├── schema.sql
+│   ├── package.json
+│   └── .env.example
+│
+├── README.md
+└── ...
+Main Routes
+
+The frontend currently contains the following major routes:
+
+/
+├── /login
+├── /register
+├── /dashboard
+├── /github
+├── /dsa
+├── /resume
+├── /jobs
+├── /roadmap
+├── /interview
+└── /settings
+Backend API
+Authentication
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/me
+GitHub
+GET  /api/github
+POST /api/github/sync
+GET  /api/github/callback
+POST /api/github/exchange-code
+DSA
+GET    /api/dsa/problems
+POST   /api/dsa/problems
+PUT    /api/dsa/problems/:id
+DELETE /api/dsa/problems/:id
+
+GET    /api/dsa/stats
+GET    /api/dsa/topics
+
+POST   /api/dsa/sync/codeforces
+Resume
+GET    /api/resume
+POST   /api/resume/upload
+PUT    /api/resume
+DELETE /api/resume
+Jobs
+GET  /api/jobs
+GET  /api/jobs/:id
+GET  /api/jobs/:id/match
+POST /api/jobs/:id/save
+DELETE /api/jobs/:id/save
+GET  /api/jobs/saved
+AI
+GET /api/ai/profile-analysis
+GET /api/ai/roadmap
+GET /api/ai/jobs/:id/insight
+GET /api/ai/interview-prep
+Installation & Setup
+Prerequisites
+
+Install the following:
+
+Node.js 18+
+PostgreSQL 14+
+Git
+1. Clone the repository
+git clone git@github.com:vaishnavi-devi7/devsignal.git
+cd devsignal
+2. Backend Setup
 cd server
 npm install
 
-# Copy the example environment file
+Create the environment file:
+
 cp .env.example .env
-```
-Update `.env` with your database credentials, JWT secret, and API keys.
 
-Initialize and seed the database with mock data:
-```bash
+Configure the required environment variables.
+
+Then initialize the database:
+
 npm run db:init
-```
 
-Start the backend development server:
-```bash
+Start the backend:
+
 npm run dev
-```
 
-### 3. Frontend Setup
-```bash
+The backend runs on:
+
+http://localhost:5005
+3. Frontend Setup
+
+Open another terminal:
+
 cd frontend
 npm install
-
-# Start the Vite development server
 npm run dev
-```
-The frontend will run on `http://localhost:5173` and the backend on `http://localhost:5001`.
+
+The frontend runs on:
+
+http://localhost:5175
+Environment Variables
+
+Create:
+
+server/.env
+
+The exact environment variables are documented in:
+
+server/.env.example
+
+The main configuration includes:
+
+DATABASE_URL=
+PORT=5005
+
+JWT_SECRET=
+
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+GITHUB_CALLBACK_URL=
+FRONTEND_URL=
+
+AI_PROVIDER=
+AI_API_KEY=
+AI_MODEL=
+AI
+
+AI configuration is optional.
+
+Without an AI_API_KEY, the core DevSignal platform remains usable, while AI endpoints return a configuration response indicating that the AI service is unavailable.
+
+GitHub OAuth Configuration
+
+For local development, configure the GitHub OAuth application with:
+
+Homepage URL:
+http://localhost:5175
+
+Authorization callback URL:
+http://localhost:5005/api/github/callback
+
+For a future production deployment, these URLs must be updated to the deployed frontend and backend URLs.
+
+Screenshots
+
+Screenshots can be added to the repository under:
+
+docs/
+
+Recommended screenshots:
+
+docs/
+├── dashboard.png
+├── github.png
+├── dsa.png
+├── resume.png
+├── jobs.png
+├── roadmap.png
+└── interview.png
+Design
+
+DevSignal follows a minimal developer-focused interface inspired by modern developer platforms.
+
+Design principles include:
+
+Dark interface
+Minimal visual hierarchy
+Thin borders
+High readability
+Restrained animations
+Consistent spacing
+Developer-focused information architecture
+Responsive layouts
+
+The visual language takes inspiration from products such as Linear, Vercel, and Raycast without directly reproducing their interfaces.
+
+Current Limitations
+
+DevSignal is currently designed as a portfolio and demonstration project.
+
+Some limitations include:
+
+AI features require an external AI provider/API key.
+Resume extraction is deterministic and may not deeply understand every resume format.
+Codeforces is currently the primary automatic DSA synchronization integration.
+Other coding platforms can be tracked manually where an official supported API is unavailable.
+Free/local deployments may have resource and availability limitations.
+The current job dataset/integration is intended for demonstration and development purposes.
+Future Improvements
+
+Potential future improvements include:
+
+Additional official coding-platform integrations
+GitHub webhook-based real-time synchronization
+More advanced resume parsing
+Expanded job data integrations
+More detailed developer analytics
+Production deployment
+Docker-based development environment
+Automated testing and CI/CD improvements
+More AI-assisted developer workflows
+Development Status
+
+DevSignal currently includes:
+
+Full-stack authentication
+GitHub OAuth
+GitHub repository intelligence
+DSA management
+Codeforces synchronization
+Resume processing
+Job matching
+Saved jobs
+AI profile analysis
+AI roadmap generation
+AI job insights
+AI interview preparation
+PostgreSQL persistence
+API authentication and authorization
+AI caching and rate limiting
+
+The project is currently intended as a full-stack portfolio project and developer intelligence platform prototype.
+
+Author
+
+Vaishnavi Devi
+
+GitHub:
+https://github.com/vaishnavi-devi7
+
+Project Repository:
+https://github.com/vaishnavi-devi7/devsignal
+
+License
+
+This project is intended for educational and portfolio purposes.
+
+
+### One thing before you paste it
+
+I intentionally **removed the old claims** about:
+
+- LeetCode automatic integration
+- fake/static AI fallback
+- old database tables
+- OAuth being a future feature
+- `GITHUB_TOKEN`
+- ports `5173/5001`
+- Redux/Zustand as something you need to implement
+
+That makes the README match the **actual DevSignal you built**, rather than the original project specification.
+
+I would also **not add screenshots until you actually have the screenshot files** in `docs/`. Otherwise GitHub will show broken images.
+give me in a way that i can copy paste 
+
+Yep machi 😎 Copy-paste the whole thing below directly into README.md:
+
+# DevSignal
+
+**DevSignal** is a full-stack Developer Intelligence Platform that brings together GitHub activity, DSA progress, resume information, and job requirements into a centralized developer profile.
+
+It helps developers understand their current profile, identify skill gaps, track their progress, and generate personalized improvement guidance using deterministic analysis and optional AI-powered insights.
+
+> Built as a portfolio project to demonstrate full-stack engineering, API integrations, authentication, database design, developer analytics, and AI integration.
 
 ---
 
-## Environment Variables
+## Features
 
-### Server (`server/.env`)
-See `server/.env.example` for the required keys:
-- `DB_*`: PostgreSQL connection details.
-- `JWT_SECRET`: Used for signing authentication tokens.
-- `GITHUB_TOKEN`: (Optional) Increases GitHub API rate limits from 60/hr to 5000/hr.
-- `AI_API_KEY`: API key for the chosen LLM provider (OpenAI, Gemini, etc.).
+### Developer Dashboard
 
----
+A centralized dashboard that brings together the developer's:
 
-## API Documentation
-
-### Authentication (`/api/auth`)
-- `POST /register` - Register a new user (Requires: name, email, password)
-- `POST /login` - Authenticate and receive JWT (Requires: email, password)
-- `GET /me` - Retrieve current authenticated user profile (Requires: Bearer Token)
-
-### GitHub Intelligence (`/api/github`)
-- `POST /sync` - Triggers a background sync of a user's GitHub footprint.
-- `GET /` - Retrieves the normalized profile and repository statistics.
-
-*(Additional endpoints for `/profile`, `/dsa`, `/resume`, `/jobs`, and `/roadmap` are structurally mounted and ready for controller implementation).*
+- GitHub activity
+- DSA progress
+- Resume status
+- Job matching information
+- Developer profile insights
+- AI-powered recommendations
 
 ---
 
-## Database Structure
+### GitHub Intelligence
 
-The PostgreSQL schema is fully normalized and heavily indexed for performance:
+DevSignal integrates with GitHub using OAuth and the GitHub API.
 
-- `users`: Core identity and authentication.
-- `developer_profiles`: 1:1 mapping for overarching scores.
-- `github_profiles` & `github_repositories`: 1:N relational mapping of a developer's open-source footprint.
-- `dsa_progress` & `dsa_topics`: Tracks aggregate metrics and unique topic proficiencies.
-- `resumes` & `resume_skills`: Supports multiple parsed resume iterations.
-- `job_analyses` & `job_skills`: Tracks JD matching history.
-- `roadmap_tasks`: AI-generated phased learning objectives.
+Features include:
 
-*Refer to `server/database/schema.sql` for exact constraints and index definitions.*
+- GitHub OAuth authentication
+- Repository synchronization
+- Repository statistics
+- Programming language distribution
+- Stars and forks
+- Repository descriptions
+- Top repositories
+- GitHub profile information
+- Secure GitHub access-token storage
+- Manual repository synchronization
 
----
-
-## AI Architecture
-
-The AI layer is completely isolated within `server/services/aiService.js`.
-- **Strict Structured Outputs:** The service strictly enforces JSON schema adherence via the API layer, parsing and validating before returning data to the controllers.
-- **Provider Agnostic:** Uses `axios` to construct standard completion payloads, making it trivial to swap between OpenAI, Anthropic, or Gemini.
-- **Graceful Fallbacks:** If the API fails or rate-limits, the service catches the error and returns a structurally perfect static mock object, ensuring the frontend never crashes.
-- **Prompt Engineering:** Prompts are decoupled into `server/services/prompts.js` to separate instructions and JSON schema definitions from business logic.
+GitHub data is fetched through the official GitHub API rather than scraping.
 
 ---
 
-## Future Improvements
+### DSA Intelligence
 
-- **OAuth Integration:** Add "Sign in with GitHub" to streamline onboarding.
-- **Real-time Webhooks:** Listen for GitHub push events to update the dashboard in real-time.
-- **Frontend State Management:** Migrate to Redux Toolkit or Zustand as the application scales.
-- **Dockerization:** Add a `docker-compose.yml` for single-command orchestration of the frontend, backend, and PostgreSQL database.
+DevSignal provides a centralized DSA tracking system.
 
+Features include:
+
+- Add solved problems
+- Edit problems
+- Delete problems
+- Search problems
+- Filter by:
+  - Difficulty
+  - Topic
+  - Platform
+  - Status
+- DSA statistics
+- Topic-level progress
+- Solving streak information
+- Dashboard DSA statistics
+
+#### Codeforces Sync
+
+Codeforces problems can be synchronized automatically using the official Codeforces API.
+
+The synchronization imports information such as:
+
+- Problem title
+- Contest information
+- Difficulty
+- Topic
+- Programming language
+- Solved status
+- Problem platform
+
+Other platforms can still be tracked manually when an official supported API integration is not available.
+
+DevSignal does not use credential scraping or unofficial platform scraping.
+
+---
+
+### Resume Intelligence
+
+DevSignal supports resume upload and processing.
+
+Supported formats:
+
+- PDF
+- DOCX
+
+Features include:
+
+- Resume upload
+- Resume replacement
+- Resume deletion
+- Resume persistence
+- Basic resume information extraction
+- File validation
+- Upload size validation
+
+Resume processing is deterministic and does not require an AI provider.
+
+---
+
+### Job Intelligence
+
+DevSignal provides deterministic job matching using information from the developer profile.
+
+The matching system considers information from:
+
+- Resume
+- GitHub
+- DSA progress
+
+The matching process evaluates areas such as:
+
+- Skills
+- Programming languages
+- Frameworks
+- Databases
+- Tools
+- DSA progress
+
+Job features include:
+
+- Job search
+- Search and filtering
+- Job details
+- Profile match analysis
+- Save jobs
+- Unsave jobs
+- Saved jobs view
+- Remote/job-type/source filters
+
+The job matching score is calculated by the backend using deterministic rules rather than being generated by the AI model.
+
+---
+
+### AI Intelligence
+
+DevSignal includes an optional AI layer for higher-level developer insights.
+
+Available AI features include:
+
+- AI Profile Analysis
+- AI Roadmap Generation
+- AI Job Insights
+- AI Interview Preparation
+
+The AI layer is isolated in the backend and receives structured developer context rather than sensitive authentication information.
+
+AI profile context can include:
+
+- Resume information
+- GitHub repository information
+- GitHub programming languages
+- DSA statistics
+- Solved DSA topics
+
+Sensitive information such as passwords, password hashes, JWTs, GitHub OAuth state, and GitHub access tokens is excluded from AI context.
+
+### AI Caching
+
+AI responses use deterministic caching based on a SHA-256 input hash.
+
+This helps avoid repeatedly generating the same insight when the underlying developer profile has not changed.
+
+### AI Rate Limiting
+
+AI endpoints are protected with per-user rate limiting to prevent excessive requests.
+
+### AI Configuration
+
+AI features require an API key to be configured in the backend environment.
+
+If an AI provider is not configured, DevSignal continues to work and returns a clear configuration response instead of generating fake AI results.
+
+---
+
+## Architecture
+
+```text
+                         ┌─────────────────────┐
+                         │      DevSignal      │
+                         │      Frontend       │
+                         │   React + Vite      │
+                         └──────────┬──────────┘
+                                    │
+                              REST API / JWT
+                                    │
+                         ┌──────────▼──────────┐
+                         │      Express        │
+                         │      Backend        │
+                         │      Node.js        │
+                         └──────┬──────┬────────┘
+                                │      │
+                    ┌───────────┘      └──────────────┐
+                    │                                  │
+          ┌─────────▼─────────┐              ┌────────▼────────┐
+          │    PostgreSQL     │              │ External APIs   │
+          │     Database      │              │                 │
+          │                   │              │ GitHub API      │
+          │ Users             │              │ Codeforces API  │
+          │ GitHub data       │              │ AI Provider     │
+          │ DSA data          │              └─────────────────┘
+          │ Resume data       │
+          │ Jobs              │
+          │ AI cache          │
+          └───────────────────┘
+Tech Stack
+Frontend
+React
+Vite
+JavaScript (ES6+)
+Tailwind CSS
+React Router
+Axios
+Chart.js
+react-chartjs-2
+Lucide React
+React Toastify
+Backend
+Node.js
+Express.js
+PostgreSQL
+pg
+JWT
+bcrypt
+REST APIs
+Integrations
+GitHub OAuth
+GitHub REST API
+Codeforces API
+AI
+Provider-agnostic AI service architecture
+Structured AI responses
+SHA-256 based response caching
+Per-user AI rate limiting
+Authentication & Security
+
+DevSignal uses several security mechanisms to protect user accounts and integrations.
+
+Authentication
+JWT-based authentication
+Password hashing using bcrypt
+Protected backend routes
+Authenticated frontend sessions
+GitHub OAuth
+
+GitHub authentication uses OAuth rather than collecting GitHub passwords.
+
+The OAuth flow uses a temporary, single-use authorization code before issuing the application's JWT.
+
+User
+ │
+ ▼
+GitHub Authorization
+ │
+ ▼
+GitHub Callback
+ │
+ ▼
+Temporary OAuth Code
+ │
+ ▼
+DevSignal Exchange Endpoint
+ │
+ ▼
+JWT + User Session
+
+OAuth authorization codes:
+
+Are generated server-side
+Expire after a limited period
+Are single-use
+Are not placed directly in the final authenticated URL as JWTs
+
+GitHub access tokens are stored using encrypted server-side storage.
+
+Database
+
+DevSignal uses PostgreSQL as its primary database.
+
+The current schema includes data for:
+
+Users
+GitHub accounts
+GitHub repositories
+DSA problems
+Resume profiles
+Jobs
+Saved jobs
+AI insights
+OAuth authorization codes
+
+The database schema is maintained in:
+
+server/schema.sql
+
+The schema uses constraints and indexes where required to maintain data integrity and efficient queries.
+
+Project Structure
+devsignal/
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── layouts/
+│   │   ├── context/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   └── utils/
+│   │
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── server/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── middleware/
+│   │   └── ...
+│   │
+│   ├── schema.sql
+│   ├── package.json
+│   └── .env.example
+│
+├── README.md
+└── ...
+Main Routes
+
+The frontend currently contains the following major routes:
+
+/
+├── /login
+├── /register
+├── /dashboard
+├── /github
+├── /dsa
+├── /resume
+├── /jobs
+├── /roadmap
+├── /interview
+└── /settings
+Backend API
+Authentication
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/me
+GitHub
+GET  /api/github
+POST /api/github/sync
+GET  /api/github/callback
+POST /api/github/exchange-code
+DSA
+GET    /api/dsa/problems
+POST   /api/dsa/problems
+PUT    /api/dsa/problems/:id
+DELETE /api/dsa/problems/:id
+
+GET    /api/dsa/stats
+GET    /api/dsa/topics
+
+POST   /api/dsa/sync/codeforces
+Resume
+GET    /api/resume
+POST   /api/resume/upload
+PUT    /api/resume
+DELETE /api/resume
+Jobs
+GET    /api/jobs
+GET    /api/jobs/:id
+GET    /api/jobs/:id/match
+POST   /api/jobs/:id/save
+DELETE /api/jobs/:id/save
+GET    /api/jobs/saved
+AI
+GET /api/ai/profile-analysis
+GET /api/ai/roadmap
+GET /api/ai/jobs/:id/insight
+GET /api/ai/interview-prep
+Installation & Setup
+Prerequisites
+
+Install the following:
+
+Node.js 18+
+PostgreSQL 14+
+Git
+1. Clone the Repository
+git clone git@github.com:vaishnavi-devi7/devsignal.git
+cd devsignal
+2. Backend Setup
+cd server
+npm install
+
+Create the environment file:
+
+cp .env.example .env
+
+Configure the required environment variables.
+
+Initialize the database:
+
+npm run db:init
+
+Start the backend:
+
+npm run dev
+
+The backend runs on:
+
+http://localhost:5005
+3. Frontend Setup
+
+Open another terminal:
+
+cd frontend
+npm install
+npm run dev
+
+The frontend runs on:
+
+http://localhost:5175
+Environment Variables
+
+Create:
+
+server/.env
+
+The exact environment variables are documented in:
+
+server/.env.example
+
+Main configuration:
+
+DATABASE_URL=
+PORT=5005
+
+JWT_SECRET=
+
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+GITHUB_CALLBACK_URL=
+FRONTEND_URL=
+
+AI_PROVIDER=
+AI_API_KEY=
+AI_MODEL=
+AI Configuration
+
+AI configuration is optional.
+
+Without an AI_API_KEY, the core DevSignal platform remains usable, while AI endpoints return a clear response indicating that the AI service is not configured.
+
+GitHub OAuth Configuration
+
+For local development, configure the GitHub OAuth application with:
+
+Homepage URL:
+http://localhost:5175
+
+Authorization callback URL:
+http://localhost:5005/api/github/callback
+
+For a future production deployment, these URLs must be updated to the deployed frontend and backend URLs.
+
+Screenshots
+
+Screenshots can be added to the repository under:
+
+docs/
+
+Recommended screenshots:
+
+docs/
+├── dashboard.png
+├── github.png
+├── dsa.png
+├── resume.png
+├── jobs.png
+├── roadmap.png
+└── interview.png
+Design
+
+DevSignal follows a minimal developer-focused interface inspired by modern developer platforms.
+
+Design principles include:
+
+Dark interface
+Minimal visual hierarchy
+Thin borders
+High readability
+Restrained animations
+Consistent spacing
+Developer-focused information architecture
+Responsive layouts
+
+The visual language takes inspiration from products such as Linear, Vercel, and Raycast without directly reproducing their interfaces.
+
+Current Limitations
+
+DevSignal is currently designed as a portfolio and demonstration project.
+
+Some limitations include:
+
+AI features require an external AI provider/API key.
+Resume extraction is deterministic and may not deeply understand every resume format.
+Codeforces is currently the primary automatic DSA synchronization integration.
+Other coding platforms can be tracked manually where an official supported API is unavailable.
+Free/local deployments may have resource and availability limitations.
+The current job dataset/integration is intended for demonstration and development purposes.
+Future Improvements
+
+Potential future improvements include:
+
+Additional official coding-platform integrations
+GitHub webhook-based real-time synchronization
+More advanced resume parsing
+Expanded job data integrations
+More detailed developer analytics
+Production deployment
+Docker-based development environment
+Automated testing and CI/CD improvements
+More AI-assisted developer workflows
+Development Status
+
+DevSignal currently includes:
+
+Full-stack authentication
+GitHub OAuth
+GitHub repository intelligence
+DSA management
+Codeforces synchronization
+Resume processing
+Job matching
+Saved jobs
+AI profile analysis
+AI roadmap generation
+AI job insights
+AI interview preparation
+PostgreSQL persistence
+API authentication and authorization
+AI caching and rate limiting
+
+The project is currently intended as a full-stack portfolio project and developer intelligence platform prototype.
+
+Author
+
+Vaishnavi Devi
+
+GitHub:
+https://github.com/vaishnavi-devi7
+
+Project Repository:
+https://github.com/vaishnavi-devi7/devsignal
