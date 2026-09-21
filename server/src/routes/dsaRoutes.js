@@ -9,6 +9,7 @@ const {
   getTopics 
 } = require('../controllers/dsaController');
 const { protect } = require('../middleware/authMiddleware');
+const { syncCodeforces } = require('../controllers/dsaSyncController');
 
 router.route('/problems')
   .get(protect, getProblems)
@@ -22,3 +23,5 @@ router.get('/stats', protect, getStats);
 router.get('/topics', protect, getTopics);
 
 module.exports = router;
+
+router.post('/sync/codeforces', protect, syncCodeforces);

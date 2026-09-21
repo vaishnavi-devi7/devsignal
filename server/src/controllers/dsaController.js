@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { getDsaStatsForUser } = require('../services/dsaService');
 
 // @desc    Get all DSA problems for a user
 // @route   GET /api/dsa/problems
@@ -147,122 +148,8 @@ const deleteProblem = async (req, res) => {
 // @access  Private
 const getStats = async (req, res) => {
   try {
-    const statsRes = await db.query(`
-      SELECT 
-        COUNT(*) as total_count,
-        SUM(CASE WHEN status = 'Solved' THEN 1 ELSE 0 END) as total_solved,
-        SUM(CASE WHEN status = 'Attempted' THEN 1 ELSE 0 END) as total_attempted,
-        SUM(CASE WHEN status = 'Solved' AND difficulty = 'Easy' THEN 1 ELSE 0 END) as easy_solved,
-        SUM(CASE WHEN status = 'Solved' AND difficulty = 'Medium' THEN 1 ELSE 0 END) as medium_solved,
-        SUM(CASE WHEN status = 'Solved' AND difficulty = 'Hard' THEN 1 ELSE 0 END) as hard_solved
-      FROM dsa_problems
-      WHERE user_id = $1
-    `, [req.user.id]);
-    
-    const stats = statsRes.rows[0];
-
-    const platformRes = await db.query(`
-      SELECT platform, COUNT(*) as count 
-      FROM dsa_problems 
-      WHERE user_id = $1 AND platform IS NOT NULL 
-      GROUP BY platform 
-      ORDER BY count DESC
-    `, [req.user.id]);
-
-    const languageRes = await db.query(`
-      SELECT language, COUNT(*) as count 
-      FROM dsa_problems 
-      WHERE user_id = $1 AND language IS NOT NULL 
-      GROUP BY language 
-      ORDER BY count DESC
-    `, [req.user.id]);
-
-    // Calculate streaks
-    const datesRes = await db.query(`
-      SELECT DISTINCT solved_at 
-      FROM dsa_problems 
-      WHERE user_id = $1 AND status = 'Solved' AND solved_at IS NOT NULL 
-      ORDER BY solved_at DESC
-    `, [req.user.id]);
-
-    let currentStreak = 0;
-    let longestStreak = 0;
-    let tempStreak = 0;
-    let lastDate = null;
-    
-    // JS dates are messy, standardizing to midnight UTC for streak calc
-    const today = new Date();
-    today.setUTCHours(0,0,0,0);
-    
-    const dates = datesRes.rows.map(row => {
-      const d = new Date(row.solved_at);
-      d.setUTCHours(0,0,0,0);
-      return d;
-    });
-
-    if (dates.length > 0) {
-      // Find current streak
-      let checkDate = new Date(today);
-      if (dates[0].getTime() === checkDate.getTime()) {
-         currentStreak = 1;
-         checkDate.setDate(checkDate.getDate() - 1);
-         for (let i = 1; i < dates.length; i++) {
-           if (dates[i].getTime() === checkDate.getTime()) {
-             currentStreak++;
-             checkDate.setDate(checkDate.getDate() - 1);
-           } else {
-             break;
-           }
-         }
-      } else {
-         // Check if they solved yesterday (streak is still alive but hasn't solved today)
-         checkDate.setDate(checkDate.getDate() - 1);
-         if (dates[0].getTime() === checkDate.getTime()) {
-           currentStreak = 1;
-           checkDate.setDate(checkDate.getDate() - 1);
-           for (let i = 1; i < dates.length; i++) {
-             if (dates[i].getTime() === checkDate.getTime()) {
-               currentStreak++;
-               checkDate.setDate(checkDate.getDate() - 1);
-             } else {
-               break;
-             }
-           }
-         }
-      }
-
-      // Find longest streak
-      tempStreak = 1;
-      longestStreak = 1;
-      for (let i = 0; i < dates.length - 1; i++) {
-        const curr = dates[i];
-        const next = dates[i+1]; // older date since we sorted DESC
-        
-        const expectedNext = new Date(curr);
-        expectedNext.setDate(expectedNext.getDate() - 1);
-        
-        if (next.getTime() === expectedNext.getTime()) {
-          tempStreak++;
-          if (tempStreak > longestStreak) {
-            longestStreak = tempStreak;
-          }
-        } else {
-          tempStreak = 1;
-        }
-      }
-    }
-
-    res.json({
-      totalSolved: parseInt(stats.total_solved) || 0,
-      easy: parseInt(stats.easy_solved) || 0,
-      medium: parseInt(stats.medium_solved) || 0,
-      hard: parseInt(stats.hard_solved) || 0,
-      totalAttempted: parseInt(stats.total_attempted) || 0,
-      languages: languageRes.rows,
-      platforms: platformRes.rows,
-      currentStreak,
-      longestStreak
-    });
+    const stats = await getDsaStatsForUser(req.user.id);
+    res.json(stats);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

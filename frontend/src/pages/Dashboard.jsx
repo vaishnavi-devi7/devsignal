@@ -56,16 +56,11 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const [dashboardRes, githubRes, dsaRes, resumeRes] = await Promise.all([
-          api.get('/dashboard'),
-          githubApi.getOverview().catch(() => ({ data: { connected: false } })),
-          dsaApi.getStats().catch(() => ({ data: null })),
-          resumeApi.getResume().catch(() => ({ data: { resume: null } }))
-        ]);
+        const dashboardRes = await api.get('/dashboard');
         setData(dashboardRes.data);
-        setGithubOverview(githubRes.data);
-        setDsaStats(dsaRes.data);
-        setResumeData(resumeRes.data.resume);
+        setGithubOverview(dashboardRes.data.githubStats);
+        setDsaStats(dashboardRes.data.dsaStats);
+        setResumeData(dashboardRes.data.resumeData);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -84,7 +79,7 @@ const Dashboard = () => {
     } catch (err) {
       console.error(err);
       if (err.response?.status === 503) {
-        setAiError("AI service is not configured.");
+        setAiError("AI service is not configured. Add AI_API_KEY to the backend environment to enable AI features.");
       } else {
         setAiError("AI insights are currently unavailable.");
       }

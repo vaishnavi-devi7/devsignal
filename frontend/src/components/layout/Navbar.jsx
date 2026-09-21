@@ -34,16 +34,16 @@ const Navbar = () => {
 
         {/* Center: Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-secondary">
-          <Link to="#product" className="hover:text-primary transition-colors">Product</Link>
-          <Link to="#features" className="hover:text-primary transition-colors">Features</Link>
-          <Link to="#how-it-works" className="hover:text-primary transition-colors">How it works</Link>
+          <a href="#product" className="hover:text-primary transition-colors">Product</a>
+          <a href="#features" className="hover:text-primary transition-colors">Features</a>
+          <a href="#how-it-works" className="hover:text-primary transition-colors">How it works</a>
         </nav>
 
         {/* Right: Desktop Actions */}
         <div className="hidden md:flex items-center gap-4">
-          <Link to="https://github.com" target="_blank" rel="noreferrer" className="text-secondary hover:text-primary transition-colors">
+          <a href="https://github.com/vaishnavi-devi7/devsignal" target="_blank" rel="noreferrer" className="text-secondary hover:text-primary transition-colors">
             <GithubBrandIcon size={18} />
-          </Link>
+          </a>
           <div className="h-4 w-px bg-border/50 mx-1"></div>
           <Link to="/login" className="text-sm font-medium text-secondary hover:text-primary transition-colors">Sign in</Link>
           <Link to="/register">
@@ -70,12 +70,12 @@ const Navbar = () => {
         }`}
       >
         <nav className="flex flex-col gap-6 text-xl font-medium tracking-tight mb-8">
-          <Link to="#product" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent transition-colors">Product</Link>
-          <Link to="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent transition-colors">Features</Link>
-          <Link to="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent transition-colors">How it works</Link>
-          <Link to="https://github.com" target="_blank" rel="noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent transition-colors flex items-center gap-2">
+          <a href="#product" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent transition-colors">Product</a>
+          <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent transition-colors">Features</a>
+          <a href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent transition-colors">How it works</a>
+          <a href="https://github.com/vaishnavi-devi7/devsignal" target="_blank" rel="noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent transition-colors flex items-center gap-2">
             GitHub
-          </Link>
+          </a>
         </nav>
         
         <div className="flex flex-col gap-4 mt-auto mb-12">

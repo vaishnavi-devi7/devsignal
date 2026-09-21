@@ -1,16 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const { 
+  loginGithub,
   authGithub, 
   githubCallback, 
   getStatus, 
   disconnectGithub, 
   syncGithub, 
   getOverview, 
-  getRepositories 
+  getRepositories,
+  exchangeCode
 } = require('../controllers/githubController');
 const { protect } = require('../middleware/authMiddleware');
 
+router.get('/login', loginGithub);
 router.get('/auth', protect, authGithub);
 // Callback does not use protect because GitHub redirects the browser here without a JWT header
 router.get('/callback', githubCallback);
@@ -19,5 +22,6 @@ router.delete('/disconnect', protect, disconnectGithub);
 router.post('/sync', protect, syncGithub);
 router.get('/overview', protect, getOverview);
 router.get('/repositories', protect, getRepositories);
+router.post('/exchange-code', exchangeCode);
 
 module.exports = router;

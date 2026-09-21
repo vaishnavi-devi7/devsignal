@@ -9,13 +9,13 @@ const parseResume = async (filePath, mimetype) => {
     if (mimetype === 'application/pdf') {
       const dataBuffer = fs.readFileSync(filePath);
       const data = await pdfParse(dataBuffer);
-      rawText = data.text;
+      rawText = data.text || "";
     } else if (
       mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
       mimetype === 'application/msword'
     ) {
       const result = await mammoth.extractRawText({ path: filePath });
-      rawText = result.value;
+      rawText = result.value || "";
     }
   } catch (error) {
     console.error('Error extracting text:', error);
@@ -26,6 +26,7 @@ const parseResume = async (filePath, mimetype) => {
 };
 
 const extractStructuredData = (text) => {
+  if (!text) text = "";
   // We do not have an LLM, so we use rudimentary deterministic heuristics.
   const profile = {
     raw_text: text,

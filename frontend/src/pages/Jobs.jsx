@@ -102,7 +102,7 @@ const Jobs = () => {
     } catch (err) {
       console.error(err);
       if (err.response?.status === 503) {
-        setAiError("AI service is not configured.");
+        setAiError("AI service is not configured. Add AI_API_KEY to the backend environment to enable AI features.");
       } else {
         setAiError("AI insights are currently unavailable.");
       }

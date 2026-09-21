@@ -56,7 +56,7 @@ const Home = () => {
       {/* Navigation */}
       <Navbar />
 
-      <main className="relative z-10 pt-32 pb-16 px-6 max-w-7xl mx-auto">
+      <main id="product" className="relative z-10 pt-32 pb-16 px-6 max-w-7xl mx-auto">
         
         {/* Hero Section */}
         <div className="flex flex-col items-center text-center mt-12 mb-24 ">
@@ -84,7 +84,7 @@ const Home = () => {
         </div>
 
         {/* Dashboard Preview */}
-        <div className="relative max-w-5xl mx-auto ">
+        <div id="how-it-works" className="relative max-w-5xl mx-auto ">
           <Card className="bg-background/80 backdrop-blur-xl border-border/50  shadow-accent/5">
             <CardContent className="p-8">
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-border/50">
@@ -112,7 +112,7 @@ const Home = () => {
         </div>
 
         {/* Features Sections */}
-        <div className="mt-32 space-y-8">
+        <div id="features" className="mt-32 space-y-8">
           <Section 
             title="GitHub Intelligence" 
             description="Deep analysis of your commit history, PR quality, and code review involvement. We highlight your real engineering impact beyond just green squares."

@@ -31,13 +31,41 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  
+  const exchangeAuthCode = async (code) => {
+    try {
+      const res = await api.post('/github/exchange-code', { code });
+      const token = res.data.token;
+      
+      // Temporarily store just the token in userInfo so api.js interceptor picks it up
+      // for the /auth/me call
+      localStorage.setItem('userInfo', JSON.stringify({ token }));
+      
+      const userRes = await api.get('/auth/me');
+      
+      // Now store the full userInfo with the token
+      const fullUserInfo = { ...userRes.data, token };
+      setUser(fullUserInfo);
+      localStorage.setItem('userInfo', JSON.stringify(fullUserInfo));
+      
+      return true;
+    } catch (error) {
+      console.error(error);
+      localStorage.removeItem('userInfo');
+      return false;
+    }
+  };
+
+
+
   const logout = () => {
     localStorage.removeItem('userInfo');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, 
+    exchangeAuthCode, loading }}>
       {children}
     </AuthContext.Provider>
   );

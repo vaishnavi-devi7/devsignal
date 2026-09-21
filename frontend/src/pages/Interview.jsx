@@ -25,7 +25,7 @@ const Interview = () => {
     } catch (err) {
       console.error(err);
       if (err.response?.status === 503) {
-        setError("AI service is not configured.");
+        setError("AI service is not configured. Add AI_API_KEY to the backend environment to enable AI features.");
       } else {
         setError("AI insights are currently unavailable.");
       }

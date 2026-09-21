@@ -36,6 +36,7 @@ export const dsaApi = {
   deleteProblem: (id) => api.delete(`/dsa/problems/${id}`),
   getStats: () => api.get('/dsa/stats'),
   getTopics: () => api.get('/dsa/topics'),
+  syncCodeforces: (username) => api.post('/dsa/sync/codeforces', { username }),
 };
 
 export const resumeApi = {

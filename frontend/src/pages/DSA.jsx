@@ -153,6 +153,9 @@ const DsaModal = ({ isOpen, onClose, onSave, editingProblem }) => {
 const DSA = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [cfHandle, setCfHandle] = useState('');
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [topics, setTopics] = useState([]);
   
   const [problems, setProblems] = useState([]);
@@ -167,6 +170,23 @@ const DSA = () => {
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProblem, setEditingProblem] = useState(null);
+
+  
+  const handleSync = async () => {
+    if (!cfHandle) return;
+    try {
+      setIsSyncing(true);
+      const res = await dsaApi.syncCodeforces(cfHandle);
+      alert(res.data.message);
+      setIsSyncModalOpen(false);
+      await fetchStatsAndTopics();
+      fetchProblems();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to sync Codeforces');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const fetchStatsAndTopics = async () => {
     try {
@@ -303,6 +323,7 @@ const DSA = () => {
           <Code2 size={48} className="text-secondary mb-4 opacity-50" />
           <h2 className="text-xl font-semibold mb-2">No DSA problems tracked yet.</h2>
           <p className="text-secondary text-sm mb-6 text-center max-w-md">Record your first problem to start building your statistics, tracking your streaks, and unlocking developer intelligence.</p>
+<p className="text-xs text-secondary/70 text-center max-w-md mb-6">Automatic sync is available only for platforms with supported APIs (Codeforces). Manual entry is available for all platforms.</p>
           <Button variant="primary" onClick={() => { setEditingProblem(null); setIsModalOpen(true); }} icon={<Plus size={16} />}>
             Add Problem
           </Button>

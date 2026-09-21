@@ -1,21 +1,18 @@
 const db = require('../config/db');
+const { getDsaStatsForUser } = require('../services/dsaService');
+const { getGithubOverviewForUser } = require('../services/githubService2');
 
-// @desc    Get dashboard data
-// @route   GET /api/dashboard
-// @access  Private
 const getDashboard = async (req, res) => {
   try {
-    const profileRes = await db.query(
-      'SELECT bio, location, skills FROM user_profiles WHERE user_id = $1',
-      [req.user.id]
-    );
-
+    const profileRes = await db.query('SELECT bio, location, skills FROM user_profiles WHERE user_id = $1', [req.user.id]);
+    const resumeRes = await db.query('SELECT id, file_name, file_type, full_name, email, phone, location, skills, programming_languages, frameworks, databases, tools, education, experience, projects, certifications, updated_at FROM resume_profiles WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1', [req.user.id]);
+    
     res.status(200).json({
       user: req.user,
       profile: profileRes.rows[0] || {},
-      // Do NOT invent stats per requirements, just return empty data 
-      githubStats: null,
-      dsaStats: null,
+      githubStats: await getGithubOverviewForUser(req.user.id),
+      dsaStats: await getDsaStatsForUser(req.user.id),
+      resumeData: resumeRes.rows[0] || null,
       resumeScore: null,
       jobMatchScore: null
     });
@@ -25,6 +22,4 @@ const getDashboard = async (req, res) => {
   }
 };
 
-module.exports = {
-  getDashboard,
-};
+module.exports = { getDashboard };

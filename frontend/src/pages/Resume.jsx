@@ -24,7 +24,7 @@ const Resume = () => {
       const res = await resumeApi.getResume();
       setResume(res.data.resume);
     } catch (err) {
-      setError('Failed to fetch resume information.');
+      console.error(err); setError('Failed to fetch resume information.');
     } finally {
       setLoading(false);
     }
@@ -109,7 +109,7 @@ const Resume = () => {
 
       {error && (
         <div className="p-4 rounded-md bg-danger/10 border border-danger/20 text-danger text-sm">
-          {error}
+          <span className="font-semibold">Error:</span> {error}
         </div>
       )}
 
